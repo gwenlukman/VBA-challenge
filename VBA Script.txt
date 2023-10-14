@@ -1,0 +1,147 @@
+Sub MultipleYearStockData():
+
+'Declare Current as a worksheet object variable
+Dim ws As Worksheet
+
+'Loop Through All Sheets
+For Each ws In Worksheets
+    
+    'Setting headers
+    
+    ws.Cells(1, 9) = "Ticker"
+    ws.Cells(1, 10) = "Yearly Change"
+    ws.Cells(1, 11) = "Percent Change"
+    ws.Cells(1, 12) = "Total Stock Volume"
+    
+    
+    'Finding Last Row
+    lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    'Tracks the Summary Table row location for each ticker
+    Summary_Table_Row = 2
+    
+    
+    
+TotalStockVolume = 0
+
+        'Loop through all the ticker
+        For r = 2 To lastrow
+        
+        
+            'Check if we are still within the same ticker, if it is not...
+            If ws.Cells(r + 1, 1).Value <> ws.Cells(r, 1).Value Then
+                
+                'Getting the YearEndClose Value
+                YearEndClose = ws.Cells(r, 6).Value
+                
+                'Subtracting the YearEndClose Value and YearOpenBeginning Value
+                YearlyChange = YearEndClose - YearOpenBeginning
+                
+                'Print the YearlyChange in the Summary Table
+                ws.Range("J" & Summary_Table_Row).Value = YearlyChange
+                                   
+                'Calculating the Percent Change
+                PercentChange = YearlyChange / YearOpenBeginning
+                PercentChange = FormatPercent(PercentChange)
+                
+                'Print the Percent Change in the Summary Table
+                ws.Range("K" & Summary_Table_Row).Value = PercentChange
+                
+                'Print the Total Stock Volume
+                ws.Range("L" & Summary_Table_Row).Value = TotalStockVolume
+                
+                'Resetting the YearOpenBeginningValue
+                YearOpenBeginning = 0
+                
+                'Resetting the Total Stock Volume
+                TotalStockVolume = 0
+                
+                'Set Ticker Name
+                Ticker_Name = ws.Cells(r, 1).Value
+                
+                'Print the Ticker Name in the Summary Table
+                ws.Range("I" & Summary_Table_Row).Value = Ticker_Name
+                
+                
+                'Add one to the summary table row
+                Summary_Table_Row = Summary_Table_Row + 1
+            
+            ElseIf ws.Cells(r - 1, 1).Value <> ws.Cells(r, 1).Value Then
+            
+                'Getting the YearOpenBeginning Value
+                YearOpenBeginning = ws.Cells(r, 3)
+                
+            Else
+            
+            End If
+     
+            
+            'Calculating Stock Volume
+            If ws.Cells(r, 1).Value = ws.Cells(r + 1, 1).Value Then
+            TotalStockVolume = TotalStockVolume + ws.Cells(r, 7)
+            End If
+                   
+            
+            Next r
+            
+            For r = 2 To lastrow
+                If ws.Cells(r, 10) >= 0 Then
+                ws.Cells(r, 10).Interior.ColorIndex = 4
+                Else
+                ws.Cells(r, 10).Interior.ColorIndex = 3
+                End If
+                
+            Next r
+                
+        
+        
+    'Setting Headers
+    ws.Cells(2, 15) = "Greatest%Increase"
+    ws.Cells(3, 15) = "Greatest%Decrease"
+    ws.Cells(4, 15) = "Greatest Total Volume"
+    ws.Cells(1, 16) = "Ticker"
+    ws.Cells(1, 17) = "Value"
+    
+    'Finding for Greatest%Increase
+    Max = 0
+    For r = 2 To lastrow
+        If Max < ws.Cells(r, 11).Value Then
+        Max = ws.Cells(r, 11).Value
+        ws.Cells(2, 16) = ws.Cells(r, 9)
+        Else
+        End If
+    Next r
+    Max = FormatPercent(Max)
+    ws.Cells(2, 17) = Max
+    
+    'Finding for Greatest%Decrease
+    Min = 0
+    For r = 2 To lastrow
+        If Min > ws.Cells(r, 11).Value Then
+        Min = ws.Cells(r, 11).Value
+        ws.Cells(3, 16) = ws.Cells(r, 9)
+        Else
+        End If
+    Next r
+    Min = FormatPercent(Min)
+    ws.Cells(3, 17) = Min
+    
+    'Finding for the Greatest Total Volume
+    maxV = 0
+    For r = 2 To lastrow
+        If maxV < ws.Cells(r, 12).Value Then
+        maxV = ws.Cells(r, 12).Value
+        ws.Cells(4, 16) = ws.Cells(r, 9)
+        Else
+        End If
+    Next r
+    ws.Cells(4, 17) = maxV
+        
+    'Adjusting the column to Autofit
+    
+    ws.Columns("I:Q").AutoFit
+    
+    Next ws
+     
+End Sub
+
